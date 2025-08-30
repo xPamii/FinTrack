@@ -28,6 +28,12 @@ public class Expenses implements Serializable {
     @JoinColumn(name = "users_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(name = "type", length = 45, nullable = false)
+    private String type;
 
     @Column(name = "amount", nullable = false)
     private double amount;
