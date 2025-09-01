@@ -6,6 +6,7 @@ import {
   StatusBar,
   Animated,
   StyleSheet,
+  Image,
 } from "react-native";
 import Svg, { Rect, Path } from "react-native-svg";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -105,31 +106,13 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
 
 export default SplashScreen;
 
-/** 🔹 FinTrack Logo (SVG) */
+/** 🔹 FinTrack Logo */
 const FinTrackLogo: React.FC<{ size?: number }> = ({ size = 120 }) => {
   return (
-    <Svg width={size} height={size} viewBox="0 0 100 100">
-      {/* Wallet body */}
-      <Rect x="10" y="25" width="80" height="55" rx="14" fill={COLORS.blue} />
-      {/* Wallet lip */}
-      <Rect x="20" y="20" width="60" height="8" rx="4" fill={COLORS.blue} opacity={0.9} />
-      {/* Upward arrow (growth) */}
-      <Path
-        d="M25 63 L40 48 L52 58 L72 38"
-        stroke={COLORS.green}
-        strokeWidth={6}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M72 38 L72 50 M72 38 L60 38"
-        stroke={COLORS.green}
-        strokeWidth={6}
-        fill="none"
-        strokeLinecap="round"
-      />
-    </Svg>
+    <Image
+      source={require("../assets/icon.png")}
+      style={{ width: size, height: size, resizeMode: "contain" }}
+    />
   );
 };
 

@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "FinTrack",
-    "slug": "FinTrack",
+    "name": "",
+    "slug": "",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/finTrackLogo.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -23,7 +23,7 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/finTrackLogo.png"
     }
   }
 }
