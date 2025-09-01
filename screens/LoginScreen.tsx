@@ -14,36 +14,62 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
+const PUBLICK_URL = "https://8cbd97284bea.ngrok-free.app";
+import { Dialog, ALERT_TYPE, Toast } from "react-native-alert-notification";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+
 export default function LoginScreen({ navigation }: { navigation: any }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [getEmail, setEmail] = useState("");
+  const [getPassword, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // const handleLogin = async () => {
-  //   if (!email || !password) {
-  //     Alert.alert("Error", "Please fill in all fields");
-  //     return;
-  //   }
+  const handleSignIn = async () => {
+    if (!getEmail || !getPassword) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+    setIsLoading(true);
 
-  //   setIsLoading(true);
-  //   try {
-  //     const res = await axios.post("http://10.0.2.2:8080/ExpenseApp/login", {
-  //       email,
-  //       password,
-  //     });
+    try {
 
-  //     if (res.data.id) {
-  //       await AsyncStorage.setItem("userId", res.data.id.toString());
-  //       navigation.replace("Dashboard");
-  //     } else {
-  //       Alert.alert("Login Failed", "Invalid credentials");
-  //     }
-  //   } catch (err) {
-  //     Alert.alert("Error", "Something went wrong");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+      const response = await fetch(PUBLICK_URL + "/FinTrack/SignIn", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: getEmail,
+          password: getPassword
+        })
+      });
+
+      const json = await response.json();
+
+      if (response.ok && json.id) {
+        await AsyncStorage.setItem("userId", json.id.toString());
+
+        Dialog.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: "Success",
+          textBody: "Account created successfully.Please log in to continue.",
+          button: "OK",
+        });
+
+        navigation.replace("Dashboard");
+      } else {
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "WARNING",
+          textBody: "Sign in failed. Please check your credentials.",
+
+        });
+      }
+    } catch (err: any) {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -63,7 +89,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email Address</Text>
               <TextInput
-                value={email}
+                value={getEmail}
                 onChangeText={setEmail}
                 style={styles.input}
                 placeholder="Enter your email"
@@ -77,7 +103,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Password</Text>
               <TextInput
-                value={password}
+                value={getPassword}
                 onChangeText={setPassword}
                 style={styles.input}
                 placeholder="Enter your password"
@@ -93,7 +119,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
 
             <TouchableOpacity
               style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-              onPress={() => navigation.navigate("Dashboard")}
+              onPress={handleSignIn}
               disabled={isLoading}
             >
               <Text style={styles.loginButtonText}>

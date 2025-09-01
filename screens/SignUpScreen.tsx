@@ -8,7 +8,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import axios, { get } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -19,6 +19,8 @@ import {
   Dialog,
   Toast,
 } from "react-native-alert-notification";
+
+const PUBLICK_URL = "https://8cbd97284bea.ngrok-free.app";
 
 export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [getFullName, setFullName] = React.useState("");
@@ -87,25 +89,23 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
   };
 
   const handleSignUp = async () => {
-
     if (!validateForm()) return;
     setIsLoading(true);
 
-    let formData = new FormData();
-    formData.append("fullName", getFullName);
-    formData.append("username", getUsername);
-    formData.append("email", getEmail);
-    formData.append("password", getPassword);
-    // formData.append("confirmPassword", getConfirmPassword);
-
     try {
-      const response = await fetch(
-        "https://91f81cca6fbb.ngrok-free.app/FinTrack/SignUp",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
+
+      const response = await fetch(PUBLICK_URL + "/FinTrack/SignUp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fullName: getFullName,
+          username: getUsername,
+          email: getEmail,
+          password: getPassword
+        })
+      });
 
       const res = await response.json();
 
@@ -114,20 +114,18 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
 
         Dialog.show({
           type: ALERT_TYPE.SUCCESS,
-          title: 'Success',
-          textBody: 'Account created succussfully',
-          button: 'OK',
+          title: "Success",
+          textBody: "Account created successfully.Please log in to continue.",
+          button: "OK",
         });
-        [
-          {
-            text: "OK", onPress: () => navigation.replace("Dashboard")
-          }
-        ];
+
+        navigation.replace("Login");
       } else if (response.status === 409) {
-        Toast.show({
+        Dialog.show({
           type: ALERT_TYPE.DANGER,
-          title: "WARNING",
-          textBody: "An account with this email already exists",
+          title: "Error",
+          textBody: "An account with this email already exists.Please use a different email.or try logging in.",
+          button: "OK"
         });
       } else {
         Toast.show({
@@ -144,6 +142,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
     }
   };
 
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -151,11 +150,12 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
     >
       <AlertNotificationRoot>
         <ScrollView contentContainerStyle={styles.scrollContainer}>
+
           <View style={styles.formContainer}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join us and start tracking your expenses</Text>
+              <Text style={styles.subtitle}>Join us and start tracking your expenses with</Text>
             </View>
 
             {/* Form */}
@@ -256,7 +256,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
               {/* Sign Up Button */}
               <TouchableOpacity
                 style={[styles.signUpButton, isLoading && styles.signUpButtonDisabled]}
-                  onPress={handleSignUp}
+                onPress={handleSignUp}
                 disabled={isLoading}
               >
                 <Text style={styles.signUpButtonText}>
@@ -405,5 +405,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#3B82F6",
     fontWeight: "600",
-  },
+  }
 });
