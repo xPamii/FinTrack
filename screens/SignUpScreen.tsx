@@ -96,7 +96,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
     formData.append("username", getUsername);
     formData.append("email", getEmail);
     formData.append("password", getPassword);
-    formData.append("confirmPassword", getConfirmPassword);
+    // formData.append("confirmPassword", getConfirmPassword);
 
     try {
       const response = await fetch(
