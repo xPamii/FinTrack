@@ -180,7 +180,8 @@ const Dashboard: FC = () => {
             <View style={styles.balanceCard}>
                 <Text style={styles.balanceLabel}>Total Balance</Text>
                 <Text style={styles.balanceAmount}>{formatCurrency(balance)}</Text>
-                <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
+                <TouchableOpacity style={styles.addButton} 
+               onPress={() => navigation.navigate("SignUp")}>
                     <Text style={styles.addButtonText}>+ Add</Text>
                 </TouchableOpacity>
             </View>
