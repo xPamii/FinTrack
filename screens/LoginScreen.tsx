@@ -8,15 +8,14 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Dialog, ALERT_TYPE, Toast } from "react-native-alert-notification";
 
 const PUBLICK_URL = "https://8cbd97284bea.ngrok-free.app";
-import { Dialog, ALERT_TYPE, Toast } from "react-native-alert-notification";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [getEmail, setEmail] = useState("");
@@ -25,22 +24,36 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
 
   const handleSignIn = async () => {
     if (!getEmail || !getPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "WARNING",
+        textBody: "Sign in failed. Please check your credentials.",
+      });
       return;
     }
+
+     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+     if (!emailRegex.test(getEmail)) {
+       Toast.show({
+         type: ALERT_TYPE.DANGER,
+         title: "WARNING",
+         textBody: "Please enter a valid email address",
+       });
+       return;
+     }
+
     setIsLoading(true);
 
     try {
-
       const response = await fetch(PUBLICK_URL + "/FinTrack/SignIn", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: getEmail,
-          password: getPassword
-        })
+          password: getPassword,
+        }),
       });
 
       const json = await response.json();
@@ -51,7 +64,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
         Dialog.show({
           type: ALERT_TYPE.SUCCESS,
           title: "Success",
-          textBody: "Account created successfully.Please log in to continue.",
+          textBody: "Sign in successful!. Welcome back",
           button: "OK",
         });
 
@@ -61,7 +74,6 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
           type: ALERT_TYPE.DANGER,
           title: "WARNING",
           textBody: "Sign in failed. Please check your credentials.",
-
         });
       }
     } catch (err: any) {
@@ -118,7 +130,10 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+              style={[
+                styles.loginButton,
+                isLoading && styles.loginButtonDisabled,
+              ]}
               onPress={handleSignIn}
               disabled={isLoading}
             >
