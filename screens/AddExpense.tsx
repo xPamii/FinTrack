@@ -13,11 +13,19 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  ALERT_TYPE,
+  Dialog,
+  Toast,
+} from "react-native-alert-notification";
+
+const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
+
 
 export default function AddExpenseScreen({ navigation }: { navigation: any }) {
 
-  const [categories, setCategories] = useState<any[]>([]);
-  const [expenseTypes, setExpenseTypes] = useState<any[]>([]);
+  const [getCategories, setCategories] = useState<any[]>([]);
+  const [getExpenseTypes, setExpenseTypes] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -32,9 +40,10 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
   useEffect(() => {
     const fetchMetaData = async () => {
       try {
-        const res = await axios.get("http://10.0.2.2:8080/ExpenseApp/metaData");
-        setCategories(res.data.categories);
-        setExpenseTypes(res.data.types);
+        const response = await fetch(PUBLICK_URL+"FinTrack/metaData");
+        const res = await response.json();
+        setCategories(res.categories);
+        setExpenseTypes(res.types);
       } catch (err) {
         Alert.alert("Error", "Failed to load categories and types");
       }
@@ -73,34 +82,52 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
 
   const handleAdd = async () => {
     if (!validateForm()) return;
-
     setIsLoading(true);
+
     try {
       const userId = await AsyncStorage.getItem("userId");
 
-      const res = await axios.post("http://10.0.2.2:8080/ExpenseApp/SaveExpense", {
-        userId: Number(userId),
-        category: formData.categoryId,
-        type: formData.typeId,
-        amount: Number(formData.amount)
+      const response = await fetch(PUBLICK_URL+"FinTrack/SaveExpense", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userId: Number(userId),
+          title: formData.title,
+          category: formData.categoryId,
+          type: formData.typeId,
+          amount: Number(formData.amount)
+        })
       });
 
-      if (res.data.success) {
-        Alert.alert("Success", "Transaction added successfully!", [
-          { text: "OK", onPress: () => navigation.goBack() }
-        ]);
+      const res = await response.json();
+
+      if (response.ok && res.success) {
+        Dialog.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: "Success",
+          textBody: "Transaction added successfully!",
+          button: "OK",
+          onPressButton: () => navigation.goBack()
+        });
       } else {
-        Alert.alert("Error", res.data.error || "Failed to add transaction");
+        Toast.show({
+          type: ALERT_TYPE.DANGER,
+          title: "Error",
+          textBody: res.error || "Failed to add transaction",
+        });
       }
-    } catch (err) {
+    } catch (err: any) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getSelectedType = () => expenseTypes.find(t => t.id === formData.typeId);
-  const getSelectedCategory = () => categories.find(c => c.id === formData.categoryId);
+
+  const getSelectedType = () => getExpenseTypes.find(t => t.id === formData.typeId);
+  const getSelectedCategory = () => getCategories.find(c => c.id === formData.categoryId);
 
   return (
     <KeyboardAvoidingView
@@ -190,7 +217,7 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Select Type</Text>
-              {expenseTypes.map((type) => (
+              {getExpenseTypes.map((type) => (
                 <TouchableOpacity
                   key={type.id}
                   style={[styles.modalOption, formData.typeId === type.id && styles.selectedOption]}
@@ -217,7 +244,7 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Select Category</Text>
               <ScrollView>
-                {categories.map((category) => (
+                {getCategories.map((category) => (
                   <TouchableOpacity
                     key={category.id}
                     style={[styles.modalOption, formData.categoryId === category.id && styles.selectedOption]}
