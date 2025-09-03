@@ -11,7 +11,6 @@ import {
   ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
   ALERT_TYPE,
   AlertNotificationRoot,
@@ -19,7 +18,7 @@ import {
   Toast,
 } from "react-native-alert-notification";
 
-const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
+const PUBLICK_URL = "https://ec52c035de10.ngrok-free.app/";
 
 export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [getFullName, setFullName] = React.useState("");

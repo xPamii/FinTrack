@@ -10,13 +10,29 @@ import AddExpenseScreen from './screens/AddExpense';
 import MyAccount from './screens/MyAccount';
 import AboutUs from './screens/AboutUs';
 import ALLHistory from './screens/AllHistory';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 
 const Stack = createStackNavigator();
 
 export default function App() {
+
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem("userId");
+      setInitialRoute(token ? "Splash" : "Splash");
+    };
+    checkLoginStatus();
+  }, []);
+
+  if (!initialRoute) return null;
+
+
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />

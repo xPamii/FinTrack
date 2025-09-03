@@ -17,7 +17,7 @@ import {
   Toast,
 } from "react-native-alert-notification";
 
-const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
+const PUBLICK_URL = "https://ec52c035de10.ngrok-free.app/";
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [getEmail, setEmail] = useState("");

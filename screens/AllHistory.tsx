@@ -181,7 +181,12 @@ export default function ALLHistory() {
                             item.type === "Expense" ? styles.negative : styles.positive,
                         ]}
                     >
-                        {item.type === "Expense" ? "-" : "+"}${item.amount.toFixed(2)}
+                        {item.type === "Expense" ? "-" : "+"}
+                        {new Intl.NumberFormat("en-LK", {
+                            style: "currency",
+                            currency: "LKR",
+                            minimumFractionDigits: 2,
+                        }).format(item.amount)}
                     </Text>
                     <Text style={styles.date}>
                         {dt.toLocaleDateString()} {dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -304,8 +309,8 @@ export default function ALLHistory() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f5f7fb", padding: 12 },
-    header: { fontSize: 22, fontWeight: "700", marginBottom: 8, color: "#111" },
+    container: { flex: 1, backgroundColor: "#f5f7fb", padding: 12, },
+    header: { fontSize: 22, fontWeight: "700", marginBottom: 8, color: "#111",  marginTop: 50 },
     filtersRow: { marginBottom: 8 },
     filterGroup: { marginBottom: 8 },
     filterLabel: { fontSize: 13, color: "#444", marginBottom: 6 },

@@ -19,7 +19,7 @@ import {
   Toast,
 } from "react-native-alert-notification";
 
-const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
+const PUBLICK_URL = "https://ec52c035de10.ngrok-free.app/";
 
 
 export default function AddExpenseScreen({ navigation }: { navigation: any }) {
@@ -104,19 +104,20 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
       const res = await response.json();
 
       if (response.ok && res.success) {
-        Dialog.show({
+        Toast.show({
           type: ALERT_TYPE.SUCCESS,
           title: "Success",
-          textBody: "Transaction added successfully!",
-          button: "OK",
-          onPressButton: () => navigation.goBack()
+          textBody: "Transaction added successfully!"
         });
+        // Alert.alert("Success", "Transaction added successfully!");
+        resetForm();
       } else {
         Toast.show({
           type: ALERT_TYPE.DANGER,
           title: "Error",
           textBody: res.error || "Failed to add transaction",
         });
+        // Alert.alert("Error", res.error || "Failed to add transaction");
       }
     } catch (err: any) {
       Alert.alert("Error", "Something went wrong. Please try again.");

@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 type Transaction = {
     id: string;
@@ -28,88 +30,7 @@ const COLORS = {
     dark: "#111827",
 };
 
-const SAMPLE_TRANSACTIONS: Transaction[] = [
-    {
-        id: "1",
-        title: "Salary",
-        amount: 3200,
-        date: "2025-08-01",
-        type: "income",
-        category: "Job",
-    },
-    {
-        id: "2",
-        title: "Groceries",
-        amount: 82.5,
-        date: "2025-08-03",
-        type: "expense",
-        category: "Food",
-    },
-    {
-        id: "3",
-        title: "Electric Bill",
-        amount: 120,
-        date: "2025-08-05",
-        type: "expense",
-        category: "Utilities",
-    },
-    {
-        id: "4",
-        title: "Sold old bike",
-        amount: 150,
-        date: "2025-08-06",
-        type: "income",
-        category: "Sale",
-    },
-    {
-        id: "5",
-        title: "Coffee",
-        amount: 4.5,
-        date: "2025-08-07",
-        type: "expense",
-        category: "Food",
-    },
-    {
-        id: "6",
-        title: "Salary",
-        amount: 3200,
-        date: "2025-08-01",
-        type: "income",
-        category: "Job",
-    },
-    {
-        id: "7",
-        title: "Groceries",
-        amount: 82.5,
-        date: "2025-08-03",
-        type: "expense",
-        category: "Food",
-    },
-    {
-        id: "8",
-        title: "Electric Bill",
-        amount: 120,
-        date: "2025-08-05",
-        type: "expense",
-        category: "Utilities",
-    },
-    {
-        id: "9",
-        title: "Sold old bike",
-        amount: 150,
-        date: "2025-08-06",
-        type: "income",
-        category: "Sale",
-    },
-    {
-        id: "10",
-        title: "Coffee",
-        amount: 4.5,
-        date: "2025-08-0r7",
-        type: "expense",
-        category: "Food",
-    },
-];
+const PUBLICK_URL = "https://ec52c035de10.ngrok-free.app/";
 
 const formatCurrency = (value: number) =>
     Intl.NumberFormat(undefined, {
@@ -167,16 +88,109 @@ const TransactionRow: FC<{
 };
 
 const Dashboard: FC = () => {
-    const navigator = useNavigation();
+       const navigator = useNavigation();
 
     const [menuVisible, setMenuVisible] = useState(false);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+    const fetchUserData = async (userId: string) => {
+        const formData = new FormData();
+        formData.append("userId", userId);
+
+        try {
+            const response = await fetch(`${PUBLICK_URL}FinTrack/RecordsFetch`, {
+                method: "POST",
+                body: formData,
+            });
+
+            const rawText = await response.text();
+            let json: any;
+            try {
+                json = JSON.parse(rawText);
+            } catch {
+                throw new Error("Server did not return valid JSON.");
+            }
+
+            if (response.ok && json.status) {
+                console.log("Records:", json.records);
+                await AsyncStorage.setItem("records", JSON.stringify(json.records));
+                return json.records;
+            } else {
+                throw new Error(json.message || "Failed to fetch user data.");
+            }
+        } catch (error: any) {
+            console.error("Fetch Error:", error.message);
+            return [];
+        }
+    };
+
+    // Safely parse date
+    const parseDate = (rawDate: string): string => {
+        try {
+            const d = new Date(rawDate);
+            if (!isNaN(d.getTime())) return d.toISOString();
+
+            // fallback for "Sep 3, 2025 2:46:27 PM"
+            const months: Record<string, string> = {
+                Jan: "01", Feb: "02", Mar: "03", Apr: "04",
+                May: "05", Jun: "06", Jul: "07", Aug: "08",
+                Sep: "09", Oct: "10", Nov: "11", Dec: "12",
+            };
+
+            const parts = rawDate.split(" ");
+            const month = months[parts[0]];
+            const day = parts[1].replace(",", "").padStart(2, "0");
+            const year = parts[2];
+
+            return `${year}-${month}-${day}T00:00:00.000Z`;
+        } catch {
+            return new Date().toISOString();
+        }
+    };
+
+    const getTransactions = async (): Promise<Transaction[]> => {
+        try {
+            const recordsString = await AsyncStorage.getItem("records");
+
+            if (!recordsString) return [];
+
+            const records = JSON.parse(recordsString);
+
+            const transactions: Transaction[] = records.map((item: any) => ({
+                id: item.id.toString(),
+                title: item.title,
+                amount: item.amount,
+                date: parseDate(item.created_at),
+                type: item.type.value.toLowerCase() as "income" | "expense",
+                category: item.category?.value,
+            }));
+
+            return transactions;
+        } catch (error) {
+            console.error("Error loading transactions:", error);
+            return [];
+        }
+    };
+    useEffect(() => {
+        const loadData = async () => {
+            const userId = await AsyncStorage.getItem("userId");
+            if (userId) {
+                await fetchUserData(userId);
+            }
+            const txns = await getTransactions();
+            console.log("Mapped Transactions:", txns);
+            setTransactions(txns); // ✅ update state
+        };
+        loadData();
+    }, []);
+
+
 
     const navigation = useNavigation();
     const handleNavigate = (screen: string) => {
         setMenuVisible(false);
         navigation.navigate(screen as never);
     }
-    const transactions = SAMPLE_TRANSACTIONS;
 
     const { income, expense, balance } = useMemo(() => {
         const income = transactions
@@ -188,11 +202,6 @@ const Dashboard: FC = () => {
         const balance = income - expense;
         return { income, expense, balance };
     }, [transactions]);
-
-    const handleAdd = () => {
-        // Placeholder: navigate to Add Transaction screen or open modal
-        console.log("Add transaction tapped");
-    };
 
     const fade = useRef(new Animated.Value(0)).current;
     const slide = useRef(new Animated.Value(20)).current;
@@ -294,7 +303,8 @@ const Dashboard: FC = () => {
                 }
             />
 
-            <TouchableOpacity style={styles.fab} onPress={handleAdd}>
+            <TouchableOpacity style={styles.fab}
+                onPress={() => navigator.navigate("AddExpense" as never)}>
                 <Text style={styles.fabText}>+</Text>
             </TouchableOpacity>
         </SafeAreaView>
@@ -346,6 +356,7 @@ const styles = StyleSheet.create({
         borderRadius: 6
     },
     menuContainer: {
+        flex: 1,
         position: "absolute",
         pointerEvents: "auto",
         top: 50,
