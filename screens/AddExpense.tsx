@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { 
-  View, 
-  TextInput, 
-  Text, 
-  Alert, 
-  TouchableOpacity, 
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  TextInput,
+  Text,
+  Alert,
+  TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -13,41 +13,36 @@ import {
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-const expenseTypes = [
-  { id: "income", label: "Income", color: "#10B981" },
-  { id: "expense", label: "Expense", color: "#EF4444" }
-];
-
-const categories = [
-  { id: "food", label: "Food & Dining", icon: "🍽️" },
-  { id: "transportation", label: "Transportation", icon: "🚗" },
-  { id: "shopping", label: "Shopping", icon: "🛍️" },
-  { id: "entertainment", label: "Entertainment", icon: "🎬" },
-  { id: "bills", label: "Bills & Utilities", icon: "💡" },
-  { id: "health", label: "Health & Medical", icon: "🏥" },
-  { id: "education", label: "Education", icon: "📚" },
-  { id: "travel", label: "Travel", icon: "✈️" },
-  { id: "groceries", label: "Groceries", icon: "🛒" },
-  { id: "salary", label: "Salary", icon: "💰" },
-  { id: "freelance", label: "Freelance", icon: "💼" },
-  { id: "investment", label: "Investment", icon: "📈" },
-  { id: "other", label: "Other", icon: "📋" }
-];
 
 export default function AddExpenseScreen({ navigation }: { navigation: any }) {
+
+  const [categories, setCategories] = useState<any[]>([]);
+  const [expenseTypes, setExpenseTypes] = useState<any[]>([]);
+
   const [formData, setFormData] = useState({
     title: "",
     amount: "",
-    type: "",
-    category: ""
+    typeId: 0,
+    categoryId: 0
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
-  const updateFormData = (field: string, value: string) => {
+  useEffect(() => {
+    const fetchMetaData = async () => {
+      try {
+        const res = await axios.get("http://10.0.2.2:8080/ExpenseApp/metaData");
+        setCategories(res.data.categories);
+        setExpenseTypes(res.data.types);
+      } catch (err) {
+        Alert.alert("Error", "Failed to load categories and types");
+      }
+    };
+    fetchMetaData();
+  }, []);
+
+  const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -55,15 +50,15 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
     setFormData({
       title: "",
       amount: "",
-      type: "",
-      category: ""
+      typeId: 0,
+      categoryId: 0
     });
   };
 
   const validateForm = () => {
-    const { title, amount, type, category } = formData;
-    
-    if (!title || !amount || !type || !category) {
+    const { title, amount, typeId, categoryId } = formData;
+
+    if (!title || !amount || !typeId || !categoryId) {
       Alert.alert("Error", "Please fill in all fields");
       return false;
     }
@@ -76,58 +71,49 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
     return true;
   };
 
-//   const handleAdd = async () => {
-//     if (!validateForm()) return;
+  const handleAdd = async () => {
+    if (!validateForm()) return;
 
-//     setIsLoading(true);
-//     try {
-//       const userId = await AsyncStorage.getItem("userId");
-      
-//       const res = await axios.post("http://10.0.2.2:8080/ExpenseApp/expense", {
-//         userId,
-//         title: formData.title,
-//         amount: Number(formData.amount),
-//         type: formData.type,
-//         category: formData.category,
-//         date: new Date().toISOString()
-//       });
+    setIsLoading(true);
+    try {
+      const userId = await AsyncStorage.getItem("userId");
 
-//       if (res.data.success) {
-//         Alert.alert("Success", "Transaction added successfully!", [
-//           { text: "OK", onPress: () => navigation.goBack() }
-//         ]);
-//       } else {
-//         Alert.alert("Error", "Failed to add transaction");
-//       }
-//     } catch (err) {
-//       Alert.alert("Error", "Something went wrong. Please try again.");
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
+      const res = await axios.post("http://10.0.2.2:8080/ExpenseApp/SaveExpense", {
+        userId: Number(userId),
+        category: formData.categoryId,
+        type: formData.typeId,
+        amount: Number(formData.amount)
+      });
 
-  const getSelectedType = () => {
-    return expenseTypes.find(type => type.id === formData.type);
+      if (res.data.success) {
+        Alert.alert("Success", "Transaction added successfully!", [
+          { text: "OK", onPress: () => navigation.goBack() }
+        ]);
+      } else {
+        Alert.alert("Error", res.data.error || "Failed to add transaction");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getSelectedCategory = () => {
-    return categories.find(cat => cat.id === formData.category);
-  };
+  const getSelectedType = () => expenseTypes.find(t => t.id === formData.typeId);
+  const getSelectedCategory = () => categories.find(c => c.id === formData.categoryId);
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
-          {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Add Transaction</Text>
             <Text style={styles.subtitle}>Track your income and expenses</Text>
           </View>
 
-          {/* Form */}
           <View style={styles.form}>
             {/* Title */}
             <View style={styles.inputContainer}>
@@ -155,55 +141,40 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
               />
             </View>
 
-            {/* Type Selector */}
+            {/* Type */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Type</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.selector}
                 onPress={() => setShowTypeModal(true)}
               >
-                <Text style={[
-                  styles.selectorText, 
-                  !formData.type && styles.placeholderText
-                ]}>
-                  {getSelectedType()?.label || "Select transaction type"}
+                <Text style={[styles.selectorText, !formData.typeId && styles.placeholderText]}>
+                  {getSelectedType()?.value || "Select transaction type"}
                 </Text>
-                <Text style={styles.chevron}>▼</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Category Selector */}
+            {/* Category */}
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Category</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.selector}
                 onPress={() => setShowCategoryModal(true)}
               >
-                <Text style={[
-                  styles.selectorText, 
-                  !formData.category && styles.placeholderText
-                ]}>
-                  {getSelectedCategory() ? 
-                    `${getSelectedCategory()?.icon} ${getSelectedCategory()?.label}` : 
-                    "Select category"
-                  }
+                <Text style={[styles.selectorText, !formData.categoryId && styles.placeholderText]}>
+                  {getSelectedCategory()?.value || "Select category"}
                 </Text>
-                <Text style={styles.chevron}>▼</Text>
               </TouchableOpacity>
             </View>
 
             {/* Buttons */}
             <View style={styles.buttonContainer}>
-              <TouchableOpacity 
-                style={styles.resetButton}
-                onPress={resetForm}
-              >
+              <TouchableOpacity style={styles.resetButton} onPress={resetForm}>
                 <Text style={styles.resetButtonText}>Reset</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.addButton, isLoading && styles.addButtonDisabled]}
-                // onPress={handleAdd}
+                onPress={handleAdd}
                 disabled={isLoading}
               >
                 <Text style={styles.addButtonText}>
@@ -214,84 +185,54 @@ export default function AddExpenseScreen({ navigation }: { navigation: any }) {
           </View>
         </View>
 
-        {/* Type Selection Modal */}
-        <Modal
-          visible={showTypeModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setShowTypeModal(false)}
-        >
+        {/* Type Modal */}
+        <Modal visible={showTypeModal} transparent animationType="fade" onRequestClose={() => setShowTypeModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Select Type</Text>
               {expenseTypes.map((type) => (
                 <TouchableOpacity
                   key={type.id}
-                  style={[
-                    styles.modalOption,
-                    formData.type === type.id && styles.selectedOption
-                  ]}
+                  style={[styles.modalOption, formData.typeId === type.id && styles.selectedOption]}
                   onPress={() => {
-                    updateFormData("type", type.id);
+                    updateFormData("typeId", type.id);
                     setShowTypeModal(false);
                   }}
                 >
-                  <View style={[styles.typeIndicator, { backgroundColor: type.color }]} />
-                  <Text style={[
-                    styles.modalOptionText,
-                    formData.type === type.id && styles.selectedOptionText
-                  ]}>
-                    {type.label}
+                  <Text style={[styles.modalOptionText, formData.typeId === type.id && styles.selectedOptionText]}>
+                    {type.value}
                   </Text>
                 </TouchableOpacity>
               ))}
-              <TouchableOpacity 
-                style={styles.modalCloseButton}
-                onPress={() => setShowTypeModal(false)}
-              >
+              <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowTypeModal(false)}>
                 <Text style={styles.modalCloseText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
 
-        {/* Category Selection Modal */}
-        <Modal
-          visible={showCategoryModal}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setShowCategoryModal(false)}
-        >
+        {/* Category Modal */}
+        <Modal visible={showCategoryModal} transparent animationType="fade" onRequestClose={() => setShowCategoryModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Select Category</Text>
-              <ScrollView style={styles.modalScrollView}>
+              <ScrollView>
                 {categories.map((category) => (
                   <TouchableOpacity
                     key={category.id}
-                    style={[
-                      styles.modalOption,
-                      formData.category === category.id && styles.selectedOption
-                    ]}
+                    style={[styles.modalOption, formData.categoryId === category.id && styles.selectedOption]}
                     onPress={() => {
-                      updateFormData("category", category.id);
+                      updateFormData("categoryId", category.id);
                       setShowCategoryModal(false);
                     }}
                   >
-                    <Text style={styles.categoryIcon}>{category.icon}</Text>
-                    <Text style={[
-                      styles.modalOptionText,
-                      formData.category === category.id && styles.selectedOptionText
-                    ]}>
-                      {category.label}
+                    <Text style={[styles.modalOptionText, formData.categoryId === category.id && styles.selectedOptionText]}>
+                      {category.value}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-              <TouchableOpacity 
-                style={styles.modalCloseButton}
-                onPress={() => setShowCategoryModal(false)}
-              >
+              <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowCategoryModal(false)}>
                 <Text style={styles.modalCloseText}>Cancel</Text>
               </TouchableOpacity>
             </View>
