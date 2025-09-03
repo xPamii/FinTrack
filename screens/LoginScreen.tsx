@@ -10,42 +10,45 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Dialog, ALERT_TYPE, Toast } from "react-native-alert-notification";
+import {
+  ALERT_TYPE,
+  Dialog,
+  Toast,
+} from "react-native-alert-notification";
 
-const PUBLICK_URL = "https://8cbd97284bea.ngrok-free.app";
+const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [getEmail, setEmail] = useState("");
   const [getPassword, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+
   const handleSignIn = async () => {
-    if (!getEmail || !getPassword) {
+    if (!getEmail.trim() || !getPassword.trim()) {
       Toast.show({
         type: ALERT_TYPE.DANGER,
         title: "WARNING",
-        textBody: "Sign in failed. Please check your credentials.",
+        textBody: "Email and password are required.",
       });
       return;
     }
 
-     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
-     if (!emailRegex.test(getEmail)) {
-       Toast.show({
-         type: ALERT_TYPE.DANGER,
-         title: "WARNING",
-         textBody: "Please enter a valid email address",
-       });
-       return;
-     }
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(getEmail)) {
+      Toast.show({
+        type: ALERT_TYPE.DANGER,
+        title: "WARNING",
+        textBody: "Please enter a valid email address",
+      });
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(PUBLICK_URL + "/FinTrack/SignIn", {
+      const response = await fetch(PUBLICK_URL + "FinTrack/SignIn", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -58,30 +61,54 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
 
       const json = await response.json();
 
-      if (response.ok && json.id) {
-        await AsyncStorage.setItem("userId", json.id.toString());
+      if (response.ok && json.userId) {
+        await AsyncStorage.setItem("userId", json.userId.toString());
 
         Dialog.show({
           type: ALERT_TYPE.SUCCESS,
           title: "Success",
-          textBody: "Sign in successful!. Welcome back",
+          textBody: "Sign in successful! Welcome back.",
           button: "OK",
+          onPressButton: () => {
+            navigation.replace("Dashboard");
+          },
         });
-
-        navigation.replace("Dashboard");
+        Alert.alert("Success", "Sign in successful! Welcome back.", [
+          {
+            text: "OK",
+            onPress: () => navigation.replace("Dashboard"),
+          },
+        ]);
       } else {
         Toast.show({
           type: ALERT_TYPE.DANGER,
           title: "WARNING",
-          textBody: "Sign in failed. Please check your credentials.",
+          textBody: json.message || "Sign in failed. Please check your credentials.",
         });
+        Alert.alert("Error", json.message || "Sign in failed. Please check your credentials.");
       }
+
+      // console.log("Login response:", json);
+      // console.log("Status code:", response.status);
+      // console.log("Headers:", response.headers);
+      // console.log("URL:", response.url);
+      // console.log("Options:", response);
+      // console.log("Request Body:", {
+      //   email: getEmail,
+      //   password: getPassword,
+      // });
+      // console.log("Response Body:", json);
+      // console.log("Response Status:", response.status);
+
     } catch (err: any) {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
+
+
   };
+
 
   return (
     <KeyboardAvoidingView
@@ -135,6 +162,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
                 isLoading && styles.loginButtonDisabled,
               ]}
               onPress={handleSignIn}
+              // onPress={() => navigation.navigate("Dashboard")}
               disabled={isLoading}
             >
               <Text style={styles.loginButtonText}>

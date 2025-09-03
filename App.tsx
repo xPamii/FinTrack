@@ -6,6 +6,10 @@ import SplashScreen from './screens/SplashScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import Dashboard from './screens/Dashboard';
+import AddExpenseScreen from './screens/AddExpense';
+import MyAccount from './screens/MyAccount';
+import AboutUs from './screens/AboutUs';
+import ALLHistory from './screens/AllHistory';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +21,10 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
+        <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
+        <Stack.Screen name="Profile" component={MyAccount} />
+        <Stack.Screen name="History" component={ALLHistory} />
+        <Stack.Screen name="About" component={AboutUs} />
       </Stack.Navigator>
     </NavigationContainer>
   );

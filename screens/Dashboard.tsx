@@ -1,4 +1,4 @@
-import React, { FC, useMemo, useEffect, useRef } from "react";
+import React, { FC, useMemo, useEffect, useRef, useState } from "react";
 import {
     View,
     Text,
@@ -10,6 +10,8 @@ import {
     Animated,
     GestureResponderEvent,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
 type Transaction = {
     id: string;
@@ -23,6 +25,7 @@ type Transaction = {
 const COLORS = {
     blue: "#1E90FF",
     green: "#2ECC71",
+    dark: "#111827",
 };
 
 const SAMPLE_TRANSACTIONS: Transaction[] = [
@@ -66,12 +69,52 @@ const SAMPLE_TRANSACTIONS: Transaction[] = [
         type: "expense",
         category: "Food",
     },
+    {
+        id: "6",
+        title: "Salary",
+        amount: 3200,
+        date: "2025-08-01",
+        type: "income",
+        category: "Job",
+    },
+    {
+        id: "7",
+        title: "Groceries",
+        amount: 82.5,
+        date: "2025-08-03",
+        type: "expense",
+        category: "Food",
+    },
+    {
+        id: "8",
+        title: "Electric Bill",
+        amount: 120,
+        date: "2025-08-05",
+        type: "expense",
+        category: "Utilities",
+    },
+    {
+        id: "9",
+        title: "Sold old bike",
+        amount: 150,
+        date: "2025-08-06",
+        type: "income",
+        category: "Sale",
+    },
+    {
+        id: "10",
+        title: "Coffee",
+        amount: 4.5,
+        date: "2025-08-0r7",
+        type: "expense",
+        category: "Food",
+    },
 ];
 
 const formatCurrency = (value: number) =>
     Intl.NumberFormat(undefined, {
         style: "currency",
-        currency: "USD",
+        currency: "LKR",
         maximumFractionDigits: 2,
     }).format(value);
 
@@ -124,6 +167,15 @@ const TransactionRow: FC<{
 };
 
 const Dashboard: FC = () => {
+    const navigator = useNavigation();
+
+    const [menuVisible, setMenuVisible] = useState(false);
+
+    const navigation = useNavigation();
+    const handleNavigate = (screen: string) => {
+        setMenuVisible(false);
+        navigation.navigate(screen as never);
+    }
     const transactions = SAMPLE_TRANSACTIONS;
 
     const { income, expense, balance } = useMemo(() => {
@@ -174,14 +226,49 @@ const Dashboard: FC = () => {
                     <Text style={{ color: COLORS.blue }}>Fin</Text>
                     <Text style={{ color: COLORS.green }}>Track</Text>
                 </Animated.Text>
+
                 <Text style={styles.subtitle}>Overview</Text>
+
+                {/* Menu Button */}
+                <TouchableOpacity
+                    style={styles.menuButton}
+                    onPress={() => setMenuVisible(!menuVisible)}
+                >
+                    <Ionicons name="menu" size={28} color={COLORS.dark} />
+                </TouchableOpacity>
+
+                {/* Dropdown Menu */}
+                {menuVisible && (
+                    <View style={styles.menuContainer}>
+                        <TouchableOpacity
+                            style={styles.menuItem}
+                            onPress={() => handleNavigate("Profile")}
+                        >
+                            <Text style={styles.menuText}>Profile</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.menuItem}
+                            onPress={() => handleNavigate("History")}
+                        >
+                            <Text style={styles.menuText}>History</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.menuItem}
+                            onPress={() => handleNavigate("About")}
+                        >
+                            <Text style={styles.menuText}>About</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
             <View style={styles.balanceCard}>
                 <Text style={styles.balanceLabel}>Total Balance</Text>
                 <Text style={styles.balanceAmount}>{formatCurrency(balance)}</Text>
-                <TouchableOpacity style={styles.addButton} 
-               onPress={() => navigation.navigate("SignUp")}>
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => navigator.navigate("AddExpense" as never)}
+                >
                     <Text style={styles.addButtonText}>+ Add</Text>
                 </TouchableOpacity>
             </View>
@@ -214,33 +301,75 @@ const Dashboard: FC = () => {
     );
 };
 
-export default Dashboard;
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#f7f8fb",
     },
     header: {
-        paddingHorizontal: 20,
+        // paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between", // ensures title left, menu right
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        position: "relative",
     },
     title: {
-        fontSize: 22,
+        fontSize: 25,
         fontWeight: "700",
         marginBottom: 4,
         marginLeft: 4,
         flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        letterSpacing: 1,
+        marginTop: 25,
     },
     subtitle: {
-        fontSize: 14,
+        fontSize: 17,
         color: "#6b7280",
-        marginTop: 2,
+        fontWeight: "500",
+        marginTop: 60,
+        marginLeft: 4,
+        flexDirection: "row",
+        marginVertical: 4,
+
     },
+    menuButton: {
+        position: "absolute",
+        right: 16,
+        marginTop: 25,
+        padding: 6,
+        borderRadius: 6
+    },
+    menuContainer: {
+        position: "absolute",
+        pointerEvents: "auto",
+        top: 50,
+        right: 16,
+        width: 140,
+        backgroundColor: "#fff",
+        borderRadius: 6,
+        elevation: 5, // shadow on Android
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+    },
+    menuItem: {
+        padding: 12,
+    },
+    menuText: {
+        fontSize: 16,
+        color: "#333",
+    },
+
     balanceCard: {
         marginHorizontal: 20,
-        marginTop: 12,
+        marginTop: 5,
         backgroundColor: "#fff",
         borderRadius: 12,
         padding: 16,
@@ -384,3 +513,5 @@ const styles = StyleSheet.create({
         fontWeight: "700",
     },
 });
+
+export default Dashboard;

@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import axios, { get } from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import {
@@ -20,7 +19,7 @@ import {
   Toast,
 } from "react-native-alert-notification";
 
-const PUBLICK_URL = "https://8cbd97284bea.ngrok-free.app";
+const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
 
 export default function SignUpScreen({ navigation }: { navigation: any }) {
   const [getFullName, setFullName] = React.useState("");
@@ -94,7 +93,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
 
     try {
 
-      const response = await fetch(PUBLICK_URL + "/FinTrack/SignUp", {
+      const response = await fetch(PUBLICK_URL + "FinTrack/SignUp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -117,9 +116,11 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
           title: "Success",
           textBody: "Account created successfully.Please log in to continue.",
           button: "OK",
+          onPressButton: () => {
+            navigation.replace("Login");
+          },
         });
 
-        navigation.replace("Login");
       } else if (response.status === 409) {
         Dialog.show({
           type: ALERT_TYPE.DANGER,
