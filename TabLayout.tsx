@@ -4,16 +4,16 @@ export default function TabLayout() {
   return (
     <Tabs>
       <Tabs.Screen
-        name="index"
+        name="Dashboard"
         options={{
-          title: "Home",
+          title: "Dashboard",
           tabBarIcon: () => ({ sfSymbol: "house" }),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="MyAccount"
         options={{
-          title: "Explore",
+          title: "Profile",
           tabBarIcon: () => ({ sfSymbol: "person" }),
         }}
       />
