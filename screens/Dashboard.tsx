@@ -30,7 +30,7 @@ const COLORS = {
     dark: "#111827",
 };
 
-const PUBLICK_URL = "https://ec52c035de10.ngrok-free.app/";
+const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
 
 const formatCurrency = (value: number) =>
     Intl.NumberFormat(undefined, {

@@ -17,7 +17,7 @@ import {
   Toast,
 } from "react-native-alert-notification";
 
-const PUBLICK_URL = "https://ec52c035de10.ngrok-free.app/";
+const PUBLICK_URL = "https://sh9m42hg-8080.asse.devtunnels.ms/";
 
 export default function LoginScreen({ navigation }: { navigation: any }) {
   const [getEmail, setEmail] = useState("");
@@ -76,7 +76,7 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
         Alert.alert("Success", "Sign in successful! Welcome back.", [
           {
             text: "OK",
-            onPress: () => navigation.replace("Dashboard"),
+            onPress: () => navigation.replace("Main"),
           },
         ]);
       } else {
@@ -87,18 +87,6 @@ export default function LoginScreen({ navigation }: { navigation: any }) {
         });
         Alert.alert("Error", json.message || "Sign in failed. Please check your credentials.");
       }
-
-      // console.log("Login response:", json);
-      // console.log("Status code:", response.status);
-      // console.log("Headers:", response.headers);
-      // console.log("URL:", response.url);
-      // console.log("Options:", response);
-      // console.log("Request Body:", {
-      //   email: getEmail,
-      //   password: getPassword,
-      // });
-      // console.log("Response Body:", json);
-      // console.log("Response Status:", response.status);
 
     } catch (err: any) {
       Alert.alert("Error", "Something went wrong. Please try again.");
