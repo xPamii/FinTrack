@@ -179,7 +179,7 @@ const Dashboard: FC = () => {
             }
             const txns = await getTransactions();
             console.log("Mapped Transactions:", txns);
-            setTransactions(txns); // ✅ update state
+            setTransactions(txns);
         };
         loadData();
     }, []);
@@ -237,38 +237,6 @@ const Dashboard: FC = () => {
                 </Animated.Text>
 
                 <Text style={styles.subtitle}>Overview</Text>
-
-                {/* Menu Button */}
-                <TouchableOpacity
-                    style={styles.menuButton}
-                    onPress={() => setMenuVisible(!menuVisible)}
-                >
-                    <Ionicons name="menu" size={28} color={COLORS.dark} />
-                </TouchableOpacity>
-
-                {/* Dropdown Menu */}
-                {menuVisible && (
-                    <View style={styles.menuContainer}>
-                        <TouchableOpacity
-                            style={styles.menuItem}
-                            onPress={() => handleNavigate("Profile")}
-                        >
-                            <Text style={styles.menuText}>Profile</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.menuItem}
-                            onPress={() => handleNavigate("History")}
-                        >
-                            <Text style={styles.menuText}>History</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.menuItem}
-                            onPress={() => handleNavigate("About")}
-                        >
-                            <Text style={styles.menuText}>About</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
             </View>
 
             <View style={styles.balanceCard}>
@@ -317,12 +285,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#f7f8fb",
     },
     header: {
-        // paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 8,
         flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between", // ensures title left, menu right
+        alignItems: "flex-start",
+        // justifyContent: "", // ensures title left, menu right
         paddingHorizontal: 16,
         paddingVertical: 12,
         position: "relative",
@@ -333,51 +300,22 @@ const styles = StyleSheet.create({
         marginBottom: 4,
         marginLeft: 4,
         flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
+        // alignItems: "center",
+        // justifyContent: "center",
         letterSpacing: 1,
         marginTop: 25,
     },
     subtitle: {
+        flex:1,
         fontSize: 17,
         color: "#6b7280",
         fontWeight: "500",
-        marginTop: 60,
-        marginLeft: 4,
+        marginTop: 70,
+        marginRight:1,
         flexDirection: "row",
-        marginVertical: 4,
+        // marginVertical: ,
 
     },
-    menuButton: {
-        position: "absolute",
-        right: 16,
-        marginTop: 25,
-        padding: 6,
-        borderRadius: 6
-    },
-    menuContainer: {
-        flex: 1,
-        position: "absolute",
-        pointerEvents: "auto",
-        top: 50,
-        right: 16,
-        width: 140,
-        backgroundColor: "#fff",
-        borderRadius: 6,
-        elevation: 5, // shadow on Android
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 },
-    },
-    menuItem: {
-        padding: 12,
-    },
-    menuText: {
-        fontSize: 16,
-        color: "#333",
-    },
-
     balanceCard: {
         marginHorizontal: 20,
         marginTop: 5,
@@ -508,7 +446,7 @@ const styles = StyleSheet.create({
     fab: {
         position: "absolute",
         right: 20,
-        bottom: 30,
+        bottom: 110,
         backgroundColor: "#111827",
         width: 56,
         height: 56,

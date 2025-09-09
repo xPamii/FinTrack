@@ -11,7 +11,6 @@ import {
   ScrollView,
   Modal
 } from "react-native";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   ALERT_TYPE,

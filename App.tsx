@@ -5,14 +5,12 @@ import { createStackNavigator } from "@react-navigation/stack";
 import SplashScreen from "./screens/SplashScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SignUpScreen from "./screens/SignUpScreen";
-import Dashboard from "./screens/Dashboard";
-import AddExpenseScreen from "./screens/AddExpense";
-import MyAccount from "./screens/MyAccount";
 import AboutUs from "./screens/AboutUs";
-import ALLHistory from "./screens/AllHistory";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+
+import BottomTabs from "./navigation/BottomTabs"; // ✅ import
 
 const Stack = createStackNavigator();
 
@@ -22,7 +20,7 @@ export default function App() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem("userId");
-      setInitialRoute(token ? "Dashboard" : "Dashboard"); // can adjust later if needed
+      setInitialRoute(token ? "Main" : "Main");
     };
     checkLoginStatus();
   }, []);
@@ -39,10 +37,11 @@ export default function App() {
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
-        <Stack.Screen name="Profile" component={MyAccount} />
-        <Stack.Screen name="History" component={ALLHistory} />
-        <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
+
+        {/* ✅ Bottom Tabs as the main app */}
+        <Stack.Screen name="Main" component={BottomTabs} />
+
+        {/* Other standalone screens */}
         <Stack.Screen name="About" component={AboutUs} />
       </Stack.Navigator>
     </NavigationContainer>
